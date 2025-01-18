@@ -1,9 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
 
-#include <cmath>
-#include <iostream>
-
 // most 3D graphics systems uses 4d homogenous coors, but
 // our project, 3d coor. system might suffice.
 

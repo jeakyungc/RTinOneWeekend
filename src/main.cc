@@ -1,33 +1,15 @@
-#include "color.h"
-#include "vec3.h"
-#include "ray.h"
+#include "rtweekend.h"
 
-#include <iostream>
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
-double hit_sphere(const point3& center, double radius, const ray& r)
+color ray_color(const ray& r, const hittable& world)
 {
-    vec3 oc = center - r.origin();  // C - Q
-    auto a = dot(r.direction(), r.direction());
-    auto b = -2.0f * dot(r.direction(), oc);
-    auto c = dot(oc, oc) - radius * radius;
-
-    auto discriminat = b*b - 4*a*c;
-
-    if (discriminat < 0) return -1.0f;
-    // calculate only (-) part because 
-    // we want solution t which is closest to camera_center.
-    else return (-b - std::sqrt(discriminat)) / (2.0f * a);
-    
-    return (discriminat >= 0); // if >=0, there is 1 or 2 real value solution.
-}
-
-color ray_color(const ray& r)
-{
-    auto t = hit_sphere(point3(0,0,-1), 0.5f, r);
-    if(t > 0.0f)
+    hit_record rec;
+    if(world.hit(r, interval(0 ,infinity), rec))
     {
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5 * (N+color(1,1,1));
+        return 0.5 * (rec.normal + color(1,1,1));
     }
 
     // linear interpolation (lerp) of white to skyblue color along the y height
@@ -49,6 +31,12 @@ int main()
     // Caculate the image height, and ensure that it's at least 1
     int image_height = static_cast<int>(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
+
+    // World
+    hittable_list world;
+
+    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
+    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
 
     // Camera
     auto focal_length = 1.0f;
@@ -90,7 +78,7 @@ int main()
             auto ray_direction = pixel_center - camera_center;
             ray r(camera_center, ray_direction);
             
-            auto pixel_color = ray_color(r);
+            auto pixel_color = ray_color(r, world);
             wirte_color(std::cout, pixel_color);
         }
     }
