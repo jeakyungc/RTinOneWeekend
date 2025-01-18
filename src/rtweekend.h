@@ -26,4 +26,7 @@ inline double degrees_to_radians(double degress)
 #include "color.h"
 #include "ray.h"
 
+#include "hittable.h"
+#include "hittable_list.h"
+
 #endif
