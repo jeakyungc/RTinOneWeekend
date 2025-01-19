@@ -1,12 +1,21 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "hittable.h"
+#include "interval.h"
+#include "vec3.h"
+#include "color.h"
+#include "ray.h"
+
+#include <iostream>
+
 class camera
 {
 public:
     // Controlable Image porperties
-    int     image_width = 100;
-    double  aspect_ratio = 1.0;
+    int     image_width     = 100;
+    double  aspect_ratio    = 1.0;
+    int samples_per_pixel   = 10;
 
     // NOTE : own version - local variable to public member
     double focal_length;
@@ -23,28 +32,29 @@ public:
 
         for(int j = 0; j < image_height; j++)
         {
-            // log. \r is for CR
+            // \r is for CR
             std::clog << "\rScanlines remaining: " << (image_height-j) << ' ' << std::flush;
             for(int i = 0; i < image_width; i++)
             {
-                // conventionally, color has [0,1] range
-                auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-                auto ray_direction = pixel_center - center;
-                ray r(center, ray_direction);
-                
-                auto pixel_color = ray_color(r, world);
-                wirte_color(std::cout, pixel_color);
+                color pixel_color(0,0,0);
+                for(int sample = 0; sample < samples_per_pixel; sample++)
+                {
+                    ray r = get_ray(i, j);
+                    pixel_color += ray_color(r, world);
+                }
+                write_color(std::cout, pixel_samples_scale * pixel_color);
             }
         }
         std::clog << "\rDone.                   \n";
     }
     
 private:
-    int     image_height;  // Desired & Rendered image heigth
-    point3  center;        // Camera center
-    point3  pixel00_loc;   // Location of pixel 0,0
-    vec3    pixel_delta_u; // Offset to right pixel
-    vec3    pixel_delta_v; // Offset to below pixel
+    int     image_height;           // Desired & Rendered image heigth
+    double  pixel_samples_scale;    // Color scale factor for a sum of pixel samples
+    point3  center;                 // Camera center
+    point3  pixel00_loc;            // Location of pixel 0,0
+    vec3    pixel_delta_u;          // Offset to right pixel
+    vec3    pixel_delta_v;          // Offset to below pixel
 
     double viewport_width; // NOTE : own version - local to private member
 
@@ -53,6 +63,8 @@ private:
         // Caculate the image height, and ensure that it's at least 1
         image_height = static_cast<int>(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
+
+        pixel_samples_scale = 1.0 / samples_per_pixel;
 
         // Camera
         center = point3(0,0,0);
@@ -85,7 +97,7 @@ private:
     color ray_color(const ray& r, const hittable& world)
     {
         hit_record rec;
-        if(world.hit(r, interval(0 ,infinity), rec))
+        if(world.hit(r, interval(0, infinity), rec))
         {
             return 0.5 * (rec.normal + color(1,1,1));
         }
@@ -98,5 +110,29 @@ private:
         // blended value = (1-a) * start value + a * end value
         return (1.0f-a)*color(1.0f,1.0f,1.0f) + a*color(0.5f,0.7f,1.0f);
     }
+
+    ray get_ray(int i, int j) const
+    {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        auto offset = sample_square();
+        auto pixel_sample = pixel00_loc
+                          + ((i + offset.x()) * pixel_delta_u)
+                          + ((j + offset.y()) * pixel_delta_v);
+
+        auto ray_origin = center;
+        auto ray_direction = pixel_sample - ray_origin;
+
+        return ray(ray_origin, ray_direction);
+    }
+
+    vec3 sample_square() const
+    {
+        // Returns the vector to a random point in the [-0.5, +0.5] unit square.
+        // random_double() is in range [0,1)
+        return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    }
+    // "sample_disk()" can be used alternativly, and can be found in official github repo.
 };
 #endif
