@@ -49,6 +49,18 @@ public:
 
     double length_squared() const { return e[0]*e[0]+e[1]*e[1]+e[2]*e[2]; }
     double length() const { return std::sqrt(length_squared()); }
+
+    // Returns [0,1) ranged vector
+    static vec3 random()
+    {
+        return vec3(random_double(), random_double(), random_double());
+    }
+
+    // Returns [min,max) ranged vector
+    static vec3 random(double min, double max)
+    {
+        return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+    }
 };
 
 /* Point3 is just an alias */
@@ -126,5 +138,41 @@ inline vec3 unit_vector(const vec3& v)
 {
     // use overloaded operator '/'
     return v / v.length();
+}
+
+inline vec3 random_unit_vector()
+{
+    while(1)
+    {
+        auto p = vec3::random(-1,1);
+        auto lensq = p.length_squared();
+    
+        if(1e-160 < lensq && lensq <= 1)
+        {
+            return p / sqrt(lensq);
+            // don't use p.length() for calling overhead
+        } 
+        // With very small valued element vector, it can underflow to 0
+        // and normalizing this vector results in [+-inf, +-inf, +-inf]
+        // Thus, we have to cut off small values and double precision type
+        // guarantees that the values greater than 10^-160 (=1e-160)
+    }
+    // Using rejection sampling method.
+    // Might worry about while loop overhead. 
+    // Total sample area is 2*2*2 cube, and sample accepting area is 4/3*pi*1. 
+    // So rejection rate is 1-[(4/3*pi) / 8] = 0.476 = 47%, and 47%+ due to
+    // rejecting small vectors.
+    // Expected value E can be calculated in "E = 1/p", where p is probability 
+    // to be accepcted. (Look for "Geometric Distribution")
+    // so, let p = 47%+ = approximatly 50%, than, E = 1/(50%) = 2. Thus, 
+    // random vector can be expected to be accepted in 2 loops.
+}
+
+inline vec3 random_on_hemisphere(const vec3& normal)
+{
+    vec3 on_unit_sphere = random_unit_vector();
+    // In the same hemisphere as the normal (pointing out from surface)
+    if(dot(on_unit_sphere, normal) > 0.0f) return on_unit_sphere;
+    else return -on_unit_sphere;
 }
 #endif

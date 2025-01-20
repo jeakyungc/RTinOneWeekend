@@ -4,7 +4,7 @@
 class hit_record
 {
 public:
-    point3 p;
+    point3 p;       // ray hit point
     vec3 normal;
     double t;
     bool front_face;
