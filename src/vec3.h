@@ -166,13 +166,14 @@ inline vec3 random_unit_vector()
     // to be accepcted. (Look for "Geometric Distribution")
     // so, let p = 47%+ = approximatly 50%, than, E = 1/(50%) = 2. Thus, 
     // random vector can be expected to be accepted in 2 loops.
+    // Acutal test result can be seen in /note/loop count test.cc
 }
 
 inline vec3 random_on_hemisphere(const vec3& normal)
 {
     vec3 on_unit_sphere = random_unit_vector();
     // In the same hemisphere as the normal (pointing out from surface)
-    if(dot(on_unit_sphere, normal) > 0.0f) return on_unit_sphere;
+    if(dot(on_unit_sphere, normal) > 0.0) return on_unit_sphere;
     else return -on_unit_sphere;
 }
 #endif
