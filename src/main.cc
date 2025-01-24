@@ -1,6 +1,7 @@
 #include "rtweekend.h"
 
 #include "camera.h"
+#include "material.h"
 #include "sphere.h"
 
 int main()
@@ -8,8 +9,17 @@ int main()
     // World
     hittable_list world;
 
-    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
-    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
+    // Material
+    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));   // darkesh yellow   : rgb(204, 204, 0)
+    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));   // darkesh blue     : rgb(25, 51, 153)
+    auto material_left   = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);   // light gray       : rgb(204, 204, 204)
+    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);   // darkesh orange   : rgb(204, 153, 51)
+
+    // Geometry with mat
+    world.add(make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<sphere>(point3( 0.0,    0.0, -1.2),   0.5, material_center));
+    world.add(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
 
     // Camera
     camera cam;
@@ -17,7 +27,7 @@ int main()
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
-    cam.render_mode = Render_mode::diffuse;
+    cam.render_mode = Render_mode::MATERIAL;
     cam.max_depth = 50;
     
     cam.render(world);

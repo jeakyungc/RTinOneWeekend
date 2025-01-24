@@ -1,17 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "hittable.h"
-#include "interval.h"
-#include "vec3.h"
-#include "color.h"
-#include "ray.h"
-
-#include <iostream>
+#include "material.h"
 
 enum class Render_mode
 {
-    normal, diffuse
+    NORMAL, MATERIAL
 };
 
 class camera
@@ -26,7 +20,7 @@ public:
     // NOTE : own version - local variable to public member
     double focal_length;
     double viewport_height;
-    Render_mode render_mode = Render_mode::normal;
+    Render_mode render_mode = Render_mode::NORMAL;
 
     void render(const hittable& world)
     {
@@ -105,22 +99,23 @@ private:
     {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if(depth <= 0) return color(0,0,0);
+        
         hit_record rec;
-        if(render_mode == Render_mode::normal && world.hit(r, interval(0, infinity), rec))
+        
+        if(render_mode == Render_mode::NORMAL && world.hit(r, interval(0, infinity), rec))
         {
             // 0.5 is for normalizing ([-1,1] normal range to [0,1] color range)
             return 0.5 * (rec.normal + color(1,1,1));
         }
         // set ray_tmin=0.001 to solve shadow acne problem
-        else if(render_mode == Render_mode::diffuse && world.hit(r, interval(0.001, infinity), rec))
+        else if(render_mode == Render_mode::MATERIAL && world.hit(r, interval(0.001, infinity), rec))
         {
-            // uniform dist. random ray generation (discarded): 
-            // vec3 direction = random_on_hemisphere(rec.normal);
-            
-            // Lambertian dist. random ray generation :
-            vec3 direction = rec.normal + random_unit_vector();
-            // 0.5 is for damping effect by refleciton.
-            return 0.5 * ray_color(ray(rec.p, direction), depth-1, world);
+            ray scattered;
+            color attenuation;
+
+            if(rec.mat->scatter(r, rec, attenuation, scattered))
+                return attenuation * ray_color(scattered, depth-1, world);
+            return color(0,0,0);
         }
 
         // linear interpolation (lerp) of white to skyblue color along the y height
