@@ -110,6 +110,7 @@ private:
         // set ray_tmin=0.001 to solve shadow acne problem
         else if(render_mode == Render_mode::MATERIAL && world.hit(r, interval(0.001, infinity), rec))
         {
+            // out params
             ray scattered;
             color attenuation;
 
