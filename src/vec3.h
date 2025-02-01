@@ -176,6 +176,17 @@ inline vec3 random_unit_vector()
     // Acutal test result can be seen in /note/loop count test.cc
 }
 
+inline vec3 random_in_unit_disk()
+{
+    while(1)
+    {
+        auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+        if(p.length_squared() < 1) return p;
+
+        // NOTE : why no small value filtering and overhead calling lenght_saured is not used?
+    }
+}
+
 inline vec3 random_on_hemisphere(const vec3& normal)
 {
     vec3 on_unit_sphere = random_unit_vector();
