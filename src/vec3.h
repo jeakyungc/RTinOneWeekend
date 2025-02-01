@@ -181,12 +181,19 @@ inline vec3 random_in_unit_disk()
     while(1)
     {
         auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
-        if(p.length_squared() < 1) return p;
+        auto lensq = p.length_squared();
+    
+        if(1e-160 < lensq && lensq <= 1)
+        {
+            return p / sqrt(lensq);
+            // don't use p.length() for calling overhead
+        } 
 
         // NOTE : why no small value filtering and overhead calling lenght_saured is not used?
     }
 }
 
+// Depreicated at Chapter 9. Replaced with "random_unit_vector()"
 inline vec3 random_on_hemisphere(const vec3& normal)
 {
     vec3 on_unit_sphere = random_unit_vector();
