@@ -36,7 +36,8 @@ int main()
                     // diffuse
                     auto albedo = color::random();
                     sphere_material = make_shared<lambertian>(albedo);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                    auto center2 = center + vec3(0, random_double(0,0.5), 0);
+                    world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
                     dcnt++;
                 } else if (choose_mat < 0.95) {
                     // metal
@@ -60,8 +61,8 @@ int main()
     camera cam;
     cam.render_mode = Render_mode::MATERIAL;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 600;
-    cam.samples_per_pixel = 300;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 20;
 
     cam.vfov     = 20;

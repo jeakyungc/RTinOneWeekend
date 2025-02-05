@@ -163,8 +163,9 @@ private:
         // defocus_angle = 0 can be thought as pinhole and no defocus blur
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
+        auto ray_time = random_double();  // fire ray at [0,1) in 1 frame;
 
-        return ray(ray_origin, ray_direction);
+        return ray(ray_origin, ray_direction, ray_time);
     }
 
     vec3 sample_square() const
