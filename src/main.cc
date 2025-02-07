@@ -1,11 +1,12 @@
 #include "rtweekend.h"
-
+#include <ctime>
+#include "bvh.h"
 #include "camera.h"
 #include "material.h"
 #include "sphere.h"
 
 int main()
-{    
+{   
     // World
     hittable_list world;
 
@@ -56,6 +57,8 @@ int main()
         }
     }
 
+    world = hittable_list(make_shared<bvh_node>(world));
+
     std::clog << dcnt << ' ' << mcnt << ' ' << dicnt << '\n';
 
     camera cam;
@@ -73,5 +76,19 @@ int main()
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
+    // clock_t start, finish;
+    // double duration;
+    // start = clock();
+    std::clog << "config end\n"; 
+
+    clock_t start, finish;
+    double duration;
+    start = clock();
+
     cam.render(world);
+
+    finish = clock();
+
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    std::clog << duration << "s\n";
 }
