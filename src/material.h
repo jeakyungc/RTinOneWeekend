@@ -1,6 +1,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include "texture.h"
+
 class material
 {
 public:
@@ -17,7 +19,10 @@ public:
 class lambertian : public material
 {
 public:
-    lambertian(const color& albedo) : albedo(albedo) {}
+    // lambertian(const color& albedo) : albedo(albedo) {}
+    // albedo is now embedded in texture
+    lambertian(const color& albedo) : tex(make_shared<solid_color>(albedo)) {}
+    lambertian(shared_ptr<texture> tex) : tex(tex) {}
 
     bool scatter(
         const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered
@@ -29,12 +34,13 @@ public:
         if(scatter_direction.near_zero()) scatter_direction = rec.normal;
 
         scattered = ray(rec.p, scatter_direction, r_in.time());
-        attenuation = albedo; // attenuation is fractured reflectance form.
+        attenuation = tex->value(rec.u, rec.v, rec.p); // attenuation is fractured reflectance form.
         return true;
     }
 
 private:
-    color albedo;
+    // color albedo;
+    shared_ptr<texture> tex;
 };
 
 class metal : public material
