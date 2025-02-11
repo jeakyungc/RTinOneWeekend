@@ -10,6 +10,8 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
 endif()
 
+# 헤더 포함 경로 추가
+include_directories(external)
 
 # 실행 파일 생성
 add_executable(RTinOneWeekend src/main.cc)
